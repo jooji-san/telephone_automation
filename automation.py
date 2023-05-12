@@ -1,7 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
 
 driver = webdriver.Chrome(r'/usr/bin/chromedriver')
 driver.get("http://www.python.org")
