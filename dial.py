@@ -1,35 +1,40 @@
 import time
 from gpiozero import MCP3004
+from datetime import datetime, timedelta
 
 def get_dial_input():
   num_list = []
-  timeout = 10
+  timeout = timedelta(seconds=10)
   first_time = True
   end = False
   while True:
-    time_start = time.now
+    time_start = datetime.now()
     time_end = time_start + timeout
-    while (servo.value() < 0.1): # nearly zero
-      print(servo.value())
-      if (first_time or time.now < time_end):
+    while (servo.value < 0.1): # nearly zero
+      print(servo.value)
+      if (not first_time and time.now < time_end):
         end = True
         break
       # wait for 0.01s
     print('hihi')
     if (end):
+      if (len(num_list) == 0):
+          return -1
       number_str = ''.join(map(str, num_list))
       number = int(number_str)
       return number
       
     
     first_time = False
-    prev = servo.value()
+    prev = servo.value
+    print("0 sec")
     time.sleep(1)
-    while (prev != servo.value()):
-      prev = servo.value()
+    print("1 sec")
+    while (prev != servo.value):
+      prev = servo.value
       time.sleep(1)
     
-    num = to_num(servo.value())
+    num = to_num(servo.value)
     num_list.append(num)
 
 def to_num(input):
