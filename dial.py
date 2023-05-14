@@ -1,5 +1,5 @@
 import time
-from gpiozero import mcp3004
+from gpiozero import MCP3004
 
 def get_dial_input():
   num_list = []
