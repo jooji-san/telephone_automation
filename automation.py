@@ -2,11 +2,26 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.chrome.service import Service as ChromeService
-# from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import time
+# from selenium.webdriver.chrome.service import Service as ChromeService
+# from webdriver_manager.chrome import ChromeDriverManager
 
+from gpiozero import Button, MCP3004
+
+def open_messenger(username, password):
+  driver.get("https://messenger.com")
+  elem = driver.find_element(By.ID, "email")
+  elem.clear()
+  elem.send_keys(username)
+
+  elem = driver.find_element(By.ID, "pass")
+  elem.clear()
+  elem.send_keys(password)
+
+  elem = driver.find_element(By.ID, "loginbutton")
+  elem.click()
 
 def call_user(name):
   # search for user
@@ -30,19 +45,6 @@ def call_user(name):
       )
   elem.click()
 
-def open_messenger(username, password):
-  driver.get("https://messenger.com")
-  elem = driver.find_element(By.ID, "email")
-  elem.clear()
-  elem.send_keys(username)
-
-  elem = driver.find_element(By.ID, "pass")
-  elem.clear()
-  elem.send_keys(password)
-
-  elem = driver.find_element(By.ID, "loginbutton")
-  elem.click()
-
 def hang_up():
   # if there are two winodws, then close the second one
   if (len(driver.window_handles) == 2):
@@ -52,15 +54,50 @@ def hang_up():
     driver.switch_to.window(window_handles[0])
 
 def get_dial_input():
-  # wait for the dial to be moved
-  # wait a little bit more
-  # if the dial is not moved, then return the number
-  GPIO.wait_for_edge(channel, GPIO.RISING)
-  GPIO.wait_for_edge(channel, GPIO_RISING, timeout=5000)
+  num_list = []
+  timeout = 10
+  first_time = True
+  end = False
+  while True:
+    time_start = time.now
+    time_end = time_start + timeout
+    while (servo.value() == 0): #nearly zero
+      if (first_time or time.now < time_end):
+        end = True
+        break
+      # wait for 0.01s
+
+    if (end):
+      number_str = ''.join(map(str, num_list))
+      number = int(number_str)
+      return number
+      
+    
+    first_time = False
+    prev = servo.value()
+    time.sleep(1)
+    while (prev != servo.value()):
+      prev = servo.value()
+      time.sleep(1)
+    
+    num = to_num(servo.value())
+    num_list.append(num)
+
+def to_num(input):
+  if (input > 0 and input < 0.5):
+    return 1
+  else: 
+    return 0
+
+    
 
 username = "568711563"
 password = "Giosoft123"
 name = "Giorgi Shengelaia"
+
+Button.when_pressed = hang_up
+
+servo = MCP3004(channel=0)
 
 # json to dictionary
 
