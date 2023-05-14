@@ -39,3 +39,4 @@ def to_num(input):
     return 0
   
 servo = MCP3004(channel=0)
+get_dial_input()
