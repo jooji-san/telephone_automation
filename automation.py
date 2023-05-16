@@ -46,23 +46,24 @@ def call_user(name):
   elem.click()
 
 def is_incoming():
-  elem = driver.find_element(By.CSS_SELECTOR, '[aria-labelledby=":r42:"]')
+  elem = driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]')
   return elem != None
 
 def pick_up():
+  print("pick up")
   if (not is_incoming()):
     return
   driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]').click()
 
 def hang_up():
+  print("hang up")
   # if there are two winodws, then close the second one
   if (len(driver.window_handles) == 2):
     window_handles = driver.window_handles
     driver.switch_to.window(window_handles[1])
     driver.close()
     driver.switch_to.window(window_handles[0])
-  
-  turn_on_active_leds()
+
 
 def get_dial_input():
   num_list = []
@@ -101,7 +102,7 @@ def to_num(input):
     return 0
 
 def turn_on_active_leds():
-  configJson = {}
+  configJson = {"Giorgi Shengelaia": "123"}
   for counter, key in enumerate(configJson):
     if (is_active(key)):
       led_on(counter)
@@ -125,15 +126,17 @@ def is_active(name):
   
   
 def led_on(n):
-  print(f'led is on N{n + 2}')
+  print(f'led is on N{n + 3}')
     
 
 username = "568711563"
 password = "Giosoft123"
 name = "Giorgi Shengelaia"
 
-Button.when_pressed = hang_up
-Button.when_released = pick_up
+btn = Button(2)
+
+btn.when_pressed = hang_up
+btn.when_released = pick_up
 
 servo = MCP3004(channel=0)
 
@@ -148,8 +151,8 @@ driver = webdriver.Chrome(r'/usr/bin/chromedriver')
 
 open_messenger(username, password)
 
-while True:
-  number = get_dial_input()
+# while True:
+  # number = get_dial_input()
 
   # map number to name
 
@@ -157,10 +160,9 @@ while True:
   # when the start a call button is pressed
   # the button should be released first and then it should be pressed
 
-  call_user(name)
+  # call_user(name)
 
 
-  
 
 
 input()

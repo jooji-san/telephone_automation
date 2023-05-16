@@ -12,7 +12,7 @@ def get_dial_input():
     time_start = datetime.now()
     time_end = time_start + timeout
     print("this is value " + str(servo_feedback.value))
-    while (servo_feedback.value < 0.25): # minimum value
+    while (servo_feedback.value < 0.22): # minimum value
       print(servo_feedback.value)
       if (not first_time and datetime.now() > time_end):
         print("ending")
@@ -31,24 +31,34 @@ def get_dial_input():
     
     first_time = False
     prev = servo_feedback.value
-    time.sleep(2)
+    time.sleep(1)
     while (abs(prev - servo_feedback.value) > 0.05):
       print("hey")
       prev = servo_feedback.value
-      time.sleep(2)
+      time.sleep(1)
 
     print(prev - servo_feedback.value) 
     num = to_num(servo_feedback.value)
-    num_list.append(num)
+    if (num != "no"):
+        num_list.append(num)
+    else:
+        print("no")
     print(num_list)
     servo.min()
     time.sleep(1)
 
 def to_num(input):
-  if (input > 0 and input < 0.5):
-    return 1
+  margin_of_error = 0.04
+  if (input > 0.48 - margin_of_error and input < 0.48 + margin_of_error):
+    return 9
+  elif (input > 0.55 - margin_of_error and input < 0.55 + margin_of_error):
+      return 8
+  elif (input > 0.66 - margin_of_error and input < 0.66 + margin_of_error):
+      return 7
+  elif (input > 0.73 - margin_of_error and input < 0.73 + margin_of_error):
+      return 6
   else: 
-    return 0
+    return "no"
   
 myGPIO=25
  
