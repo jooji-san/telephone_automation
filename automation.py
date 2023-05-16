@@ -45,6 +45,15 @@ def call_user(name):
       )
   elem.click()
 
+def is_incoming():
+  elem = driver.find_element(By.CSS_SELECTOR, '[aria-labelledby=":r42:"]')
+  return elem != None
+
+def pick_up():
+  if (not is_incoming()):
+    return
+  driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]').click()
+
 def hang_up():
   # if there are two winodws, then close the second one
   if (len(driver.window_handles) == 2):
@@ -52,6 +61,8 @@ def hang_up():
     driver.switch_to.window(window_handles[1])
     driver.close()
     driver.switch_to.window(window_handles[0])
+  
+  turn_on_active_leds()
 
 def get_dial_input():
   num_list = []
@@ -89,6 +100,32 @@ def to_num(input):
   else: 
     return 0
 
+def turn_on_active_leds():
+  configJson = {}
+  for counter, key in enumerate(configJson):
+    if (is_active(key)):
+      led_on(counter)
+
+def is_active(name):
+  elem = WebDriverWait(driver, 10).until(
+          EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Search Messenger"]'))
+      )
+  elem.clear()
+  elem.send_keys(name)
+
+  xpath1 = "//ul[@role='listbox']/li[1]/ul[1]/div[2]"
+  if name == "Giorgi Shengelaia":
+    xpath1 = "//ul[@role='listbox']/li[1]/ul[1]/div[3]"
+  elem = WebDriverWait(driver, 10).until(
+          EC.presence_of_element_located((By.XPATH, xpath1))
+      )
+  
+  result = elem.find_element(By.CLASS_NAME, 'xv9rvxn')
+  return result != None
+  
+  
+def led_on(n):
+  print(f'led is on N{n + 2}')
     
 
 username = "568711563"
@@ -96,6 +133,7 @@ password = "Giosoft123"
 name = "Giorgi Shengelaia"
 
 Button.when_pressed = hang_up
+Button.when_released = pick_up
 
 servo = MCP3004(channel=0)
 
