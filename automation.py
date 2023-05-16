@@ -5,10 +5,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from datetime import datetime, timedelta
 # from selenium.webdriver.chrome.service import Service as ChromeService
 # from webdriver_manager.chrome import ChromeDriverManager
 
-from gpiozero import Button, MCP3004
+from gpiozero import Button, MCP3004, Servo
 
 def open_messenger(username, password):
   driver.get("https://messenger.com")
@@ -67,39 +68,61 @@ def hang_up():
 
 def get_dial_input():
   num_list = []
-  timeout = 10
+  timeout = timedelta(seconds=3)
   first_time = True
   end = False
   while True:
-    time_start = time.now
+    servo.detach()
+    time_start = datetime.now()
     time_end = time_start + timeout
-    while (servo.value() == 0): #nearly zero
-      if (first_time or time.now < time_end):
+    print("this is value " + str(servo_feedback.value))
+    while (servo_feedback.value < 0.22): # minimum value
+      print(servo_feedback.value)
+      if (not first_time and datetime.now() > time_end):
+        print("ending")
         end = True
         break
-      # wait for 0.01s
+      time.sleep(0.01)
 
+    print('hihi')
     if (end):
+      if (len(num_list) == 0):
+          return -1
       number_str = ''.join(map(str, num_list))
       number = int(number_str)
       return number
       
     
     first_time = False
-    prev = servo.value()
+    prev = servo_feedback.value
     time.sleep(1)
-    while (prev != servo.value()):
-      prev = servo.value()
+    while (abs(prev - servo_feedback.value) > 0.05):
+      print("hey")
+      prev = servo_feedback.value
       time.sleep(1)
-    
-    num = to_num(servo.value())
-    num_list.append(num)
+
+    print(prev - servo_feedback.value) 
+    num = to_num(servo_feedback.value)
+    if (num != "no"):
+        num_list.append(num)
+    else:
+        print("no")
+    print(num_list)
+    servo.min()
+    time.sleep(1)
 
 def to_num(input):
-  if (input > 0 and input < 0.5):
-    return 1
+  margin_of_error = 0.04
+  if (input > 0.48 - margin_of_error and input < 0.48 + margin_of_error):
+    return 9
+  elif (input > 0.55 - margin_of_error and input < 0.55 + margin_of_error):
+      return 8
+  elif (input > 0.66 - margin_of_error and input < 0.66 + margin_of_error):
+      return 7
+  elif (input > 0.73 - margin_of_error and input < 0.73 + margin_of_error):
+      return 6
   else: 
-    return 0
+    return "no"
 
 def turn_on_active_leds():
   configJson = {"Giorgi Shengelaia": "123"}
@@ -138,7 +161,16 @@ btn = Button(2)
 btn.when_pressed = hang_up
 btn.when_released = pick_up
 
-servo = MCP3004(channel=0)
+myGPIO=25
+ 
+maxPW=(2.0+0.25)/1000
+minPW=(1.0-0.55)/1000
+ 
+servo = Servo(myGPIO,min_pulse_width=minPW,max_pulse_width=maxPW)
+servo.min()
+
+time.sleep(2)
+servo_feedback = MCP3004(channel=0)
 
 # json to dictionary
 
