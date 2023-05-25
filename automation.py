@@ -1,3 +1,5 @@
+import sys
+sys.path.append('../telephone_local_app')
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -6,11 +8,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from datetime import datetime, timedelta
+import json
+import local
 #import local
 # from selenium.webdriver.chrome.service import Service as ChromeService
 # from webdriver_manager.chrome import ChromeDriverManager
 
 from gpiozero import Button, MCP3004, Servo
+
 
 def open_messenger(username, password):
   driver.get("https://messenger.com")
@@ -57,17 +62,17 @@ def pick_up():
     return
   driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]').click()
 
+def local_config():
+  print("local config")
+  local.turn_on_AP()
+  if not local.is_connected():
+    print("show wifi config")
+  print("login")
+  btn.wait_for_press()
+  local.turn_off_AP()
+  print("restart the device. flash the LEDs")
+
 def hang_up():
-  if btn.wait_for_release(timeout=1):
-    print("local config")
-    #local.turn_on_ap()
-    if not local.is_connected():
-      print("show wifi config")
-    print("login")
-    btn.wait_for_press()
-    #local.turn_off_ap()
-    print("restart the device. flash the LEDs")
-  else:
     print("hang up")
     # if there are two winodws, then close the second one
     if (len(driver.window_handles) == 2):
@@ -137,7 +142,7 @@ def to_num(input):
   else: 
     return "no"
 
-def turn_on_active_leds():
+def turn_on_active_leds(): 
   configJson = {"Giorgi Shengelaia": "123"}
   for counter, key in enumerate(configJson):
     if (is_active(key)):
@@ -173,16 +178,19 @@ def get_config_json():
         return config
 
 def get_name_from_number(input_number):
-  for name, number in config.items():
-    if number == input_number:
-      return name
+    print(config)
+    for name, number in config["contacts"].items():
+      if number == input_number:
+        return name
 
-username = config["messenger_credentials"].keys()[0]
-password = config["messenger_credentials"].values()[0]
+config = get_config_json()
+
+username = list(config["messenger_credentials"].keys())[0]
+password = list(config["messenger_credentials"].values())[0]
 
 btn = Button(2, bounce_time = 0.2)
 
-btn.when_pressed = hang_up_or_local_config
+btn.when_pressed = hang_up
 btn.when_released = pick_up
 
 myGPIO=25
@@ -197,26 +205,29 @@ servo.detach()
 time.sleep(2)
 servo_feedback = MCP3004(channel=0)
 
-config = get_config_json()
 
 chrome_options = Options()
 # enable microphone
 chrome_options.add_argument("--use-fake-ui-for-media-stream")
 
 # driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
-driver = webdriver.Chrome(r'/usr/bin/chromedriver')
+driver = webdriver.Chrome(r'/usr/bin/chromedriver', options=chrome_options)
 
 open_messenger(username, password)
 
-number = get_dial_input()
-print(number)
-  # map number to name
-name = get_name_from_number(number)
-print(name)
-  # i want the hang up button to work from the time
-  # when the start a call button is pressed
-  # the button should be released first and then it should be pressed
-call_user(name)
+while(True):
+    number = get_dial_input()
+    print(number)
+    if (number == 999):
+      local_config()
+      # map number to name
+    else:
+      name = get_name_from_number(number)
+      print(name)
+      # i want the hang up button to work from the time
+      # when the start a call button is pressed
+      # the button should be released first and then it should be pressed
+      call_user(name)
 
 input()
 
