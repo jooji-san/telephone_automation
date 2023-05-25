@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from datetime import datetime, timedelta
+import local
 # from selenium.webdriver.chrome.service import Service as ChromeService
 # from webdriver_manager.chrome import ChromeDriverManager
 
@@ -57,13 +58,23 @@ def pick_up():
   driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]').click()
 
 def hang_up():
-  print("hang up")
-  # if there are two winodws, then close the second one
-  if (len(driver.window_handles) == 2):
-    window_handles = driver.window_handles
-    driver.switch_to.window(window_handles[1])
-    driver.close()
-    driver.switch_to.window(window_handles[0])
+  if btn.wait_for_release(timeout=1):
+    print("local config")
+    local.turn_on_ap()
+    if not local.is_connected():
+      print("show wifi config")
+    print("login")
+    btn.wait_for_press()
+    local.turn_off_ap()
+    print("restart the device. flash the LEDs")
+  else:
+    print("hang up")
+    # if there are two winodws, then close the second one
+    if (len(driver.window_handles) == 2):
+      window_handles = driver.window_handles
+      driver.switch_to.window(window_handles[1])
+      driver.close()
+      driver.switch_to.window(window_handles[0])
 
 
 def get_dial_input():
@@ -151,14 +162,26 @@ def is_active(name):
 def led_on(n):
   print(f'led is on N{n + 3}')
     
+# json to dictionary
+def get_config_json():
+    with open('../config.json', 'r') as f:
+        json_lines = f.read()
+        config = json.loads(json_lines)
+        print(config)
+        return config
 
-username = "568711563"
-password = "Giosoft123"
+def get_name_from_number(input_number):
+  for name, number in config.items():
+    if number == input_number:
+      return name
+
+username = config["messenger_credentials"].keys()[0]
+password = config["messenger_credentials"].values()[0]
 name = "Giorgi Shengelaia"
 
-btn = Button(2)
+btn = Button(2, bounce_time = 0.2)
 
-btn.when_pressed = hang_up
+btn.when_pressed = hang_up_or_local_config
 btn.when_released = pick_up
 
 myGPIO=25
@@ -173,7 +196,7 @@ servo.detach()
 time.sleep(2)
 servo_feedback = MCP3004(channel=0)
 
-# json to dictionary
+config = get_config_json()
 
 chrome_options = Options()
 # enable microphone
@@ -186,18 +209,13 @@ open_messenger(username, password)
 
 number = get_dial_input()
 print(number)
-if (number == 968):
-    name = "Giorgi Shengelaia"
   # map number to name
-
+name = get_name_from_number(number)
+print(name)
   # i want the hang up button to work from the time
   # when the start a call button is pressed
   # the button should be released first and then it should be pressed
-
 call_user(name)
-
-
-
 
 input()
 
