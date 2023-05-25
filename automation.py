@@ -78,6 +78,8 @@ def hang_up():
 
 
 def get_dial_input():
+  # mock input
+  return 951
   num_list = []
   timeout = timedelta(seconds=3)
   first_time = True
