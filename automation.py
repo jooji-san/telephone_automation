@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from datetime import datetime, timedelta
-import local
+#import local
 # from selenium.webdriver.chrome.service import Service as ChromeService
 # from webdriver_manager.chrome import ChromeDriverManager
 
@@ -60,12 +60,12 @@ def pick_up():
 def hang_up():
   if btn.wait_for_release(timeout=1):
     print("local config")
-    local.turn_on_ap()
+    #local.turn_on_ap()
     if not local.is_connected():
       print("show wifi config")
     print("login")
     btn.wait_for_press()
-    local.turn_off_ap()
+    #local.turn_off_ap()
     print("restart the device. flash the LEDs")
   else:
     print("hang up")
