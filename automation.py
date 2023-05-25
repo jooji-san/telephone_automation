@@ -76,7 +76,7 @@ def get_dial_input():
     time_start = datetime.now()
     time_end = time_start + timeout
     print("this is value " + str(servo_feedback.value))
-    while (servo_feedback.value < 0.22): # minimum value
+    while (servo_feedback.value < 0.27): # minimum value
       print(servo_feedback.value)
       if (not first_time and datetime.now() > time_end):
         print("ending")
@@ -164,10 +164,11 @@ btn.when_released = pick_up
 myGPIO=25
  
 maxPW=(2.0+0.25)/1000
-minPW=(1.0-0.55)/1000
+minPW=(1.0-0.45)/1000
  
 servo = Servo(myGPIO,min_pulse_width=minPW,max_pulse_width=maxPW)
 servo.min()
+servo.detach()
 
 time.sleep(2)
 servo_feedback = MCP3004(channel=0)
@@ -183,16 +184,17 @@ driver = webdriver.Chrome(r'/usr/bin/chromedriver')
 
 open_messenger(username, password)
 
-# while True:
-  # number = get_dial_input()
-
+number = get_dial_input()
+print(number)
+if (number == 968):
+    name = "Giorgi Shengelaia"
   # map number to name
 
   # i want the hang up button to work from the time
   # when the start a call button is pressed
   # the button should be released first and then it should be pressed
 
-  # call_user(name)
+call_user(name)
 
 
 
