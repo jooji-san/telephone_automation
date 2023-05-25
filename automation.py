@@ -177,7 +177,6 @@ def get_name_from_number(input_number):
 
 username = config["messenger_credentials"].keys()[0]
 password = config["messenger_credentials"].values()[0]
-name = "Giorgi Shengelaia"
 
 btn = Button(2, bounce_time = 0.2)
 
