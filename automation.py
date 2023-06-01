@@ -53,8 +53,7 @@ def call_user(name):
   elem.click()
 
 def is_incoming():
-  elem = driver.find_element(By.CSS_SELECTOR, '[aria-label="Accept"]')
-  return elem != None
+  return driver.isDisplayed(By.CSS_SELECTOR, '[aria-label="Accept"]')
 
 def pick_up():
   print("pick up")
@@ -81,33 +80,30 @@ def hang_up():
       driver.close()
       driver.switch_to.window(window_handles[0])
 
-
 def get_dial_input():
-  # mock input
-  return 951
+  # check if the call is in progress
   num_list = []
   timeout = timedelta(seconds=3)
   first_time = True
   end = False
   while True:
-    servo.detach()
     time_start = datetime.now()
     time_end = time_start + timeout
-    print("this is value " + str(servo_feedback.value))
-    while (servo_feedback.value < 0.27): # minimum value
-      print(servo_feedback.value)
+    while (servo_feedback.value < 0.26): # minimum value
       if (not first_time and datetime.now() > time_end):
         print("ending")
         end = True
         break
       time.sleep(0.01)
 
-    print('hihi')
     if (end):
       if (len(num_list) == 0):
           return -1
       number_str = ''.join(map(str, num_list))
       number = int(number_str)
+      servo.min()
+      time.sleep(1)
+      servo.detach()
       return number
       
     
@@ -128,20 +124,19 @@ def get_dial_input():
     print(num_list)
     servo.min()
     time.sleep(1)
+    servo.detach()
 
 def to_num(input):
   margin_of_error = 0.04
-  if (input > 0.48 - margin_of_error and input < 0.48 + margin_of_error):
+  if (input > 0.587 - margin_of_error and input < 0.587 + margin_of_error):
     return 9
-  elif (input > 0.55 - margin_of_error and input < 0.55 + margin_of_error):
+  elif (input > 0.683 - margin_of_error and input < 0.683 + margin_of_error):
       return 8
-  elif (input > 0.66 - margin_of_error and input < 0.66 + margin_of_error):
+  elif (input > 0.741 - margin_of_error and input < 0.741 + margin_of_error):
       return 7
-  elif (input > 0.73 - margin_of_error and input < 0.73 + margin_of_error):
-      return 6
   else: 
     return "no"
-
+ 
 def turn_on_active_leds(): 
   configJson = {"Giorgi Shengelaia": "123"}
   for counter, key in enumerate(configJson):
@@ -180,7 +175,7 @@ def get_config_json():
 def get_name_from_number(input_number):
     print(config)
     for name, number in config["contacts"].items():
-      if number == input_number:
+      if int(number) == input_number:
         return name
 
 config = get_config_json()
@@ -196,13 +191,13 @@ btn.when_released = pick_up
 myGPIO=25
  
 maxPW=(2.0+0.25)/1000
-minPW=(1.0-0.45)/1000
+minPW=(1.0-.40)/1000
  
 servo = Servo(myGPIO,min_pulse_width=minPW,max_pulse_width=maxPW)
 servo.min()
+time.sleep(1)
 servo.detach()
 
-time.sleep(2)
 servo_feedback = MCP3004(channel=0)
 
 
@@ -217,6 +212,8 @@ open_messenger(username, password)
 
 while(True):
     number = get_dial_input()
+    if (number == -1):
+      break;
     print(number)
     if (number == 999):
       local_config()
@@ -226,8 +223,7 @@ while(True):
       print(name)
       # i want the hang up button to work from the time
       # when the start a call button is pressed
-      # the button should be released first and then it should be pressed
+      # the button should be released first and then it should be pressed call_user(name) 
       call_user(name)
-
 input()
 
