@@ -66,10 +66,7 @@ def local_config():
   local.turn_on_AP()
   if not local.is_connected():
     print("show wifi config")
-  print("login")
-  btn.wait_for_press()
-  local.turn_off_AP()
-  print("restart the device. flash the LEDs")
+  return
 
 def hang_up():
     print("hang up")
@@ -213,7 +210,7 @@ open_messenger(username, password)
 while(True):
     number = get_dial_input()
     if (number == -1):
-      break;
+      break
     print(number)
     if (number == 999):
       local_config()
